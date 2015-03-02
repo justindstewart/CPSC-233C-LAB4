@@ -5,7 +5,7 @@
 
   Lab 4: variable arguments
 
-  Authors: Justin Stewart (scubastew@csu.fullerton.edu
+  Authors: Justin Stewart (scubastew@csu.fullerton.edu)
 
 */ 
 
@@ -29,51 +29,84 @@ double median(int num, ...);
  */
 int mode(int num, ...);
 
+//compare is used to sort arrays
+int compare (const void * a, const void * b);
+
 double median(int num, ...) {
+  //Start variable argument list
   va_list myList;
   va_start (myList, num);
   
+  //Create array of size num(size of argument list)
   int *array = malloc(num * sizeof(int));
-  int count = 0;
-  int sum = 0;
-  double med = 0.0;
-  int mid = num/2;
-  int swap;
   
-  while (count < num) {
+  //Loop through argument list adding each element to array
+  for(int i = 0; i < num; i++) {
     int number = va_arg (myList, int);
-    array[count] = number;
-    count++;
+    array[i] = number;
   }
-
+  
+  //End variable argument list
   va_end (myList);
 
-  for (int i = 0; i < (num -1); i++) {
-    for (int j = 0; j < num - i - 1; j++) {
-      if (array[j] > array[j+1]) {
-	swap = array[j];
-	array[j] = array [j+1];
-	array[j+1] = swap;
-      }
-    }
-  }
+  //Sort array
+  qsort(array, num, sizeof(int), compare);
   
+  //Checks for even array, does appropriate calculation
   if (num%2 == 0) {
-    sum = array[num - 1] + array[num];
-    med = (double)sum / 2.0;
+    return ((array[num/2] + array[num/2 - 1]) / 2.0);
   }
   else {
-    med = array[mid + 1];
+    return array[num/2];
   }
-  
-
-  return med;
 }
 
 int mode(int num, ...) {
-  /* This function definition is obviously incorrect and needs to be
-     replaced. */
-  return 0;
+  //Start argument list
+  va_list myList;
+  va_start (myList, num);
+
+  //Create array of size num(size of argument list)
+  int *array = malloc(num * sizeof(int));
+
+  //Variables and arrays initialized to 0
+  int countModes[11] = {0};
+  int maxModes = 0;
+  int maxIndex = 0;
+  int minIndex = 0;
+
+  //Loop through argument list adding each element to array and counting modes
+  for (int i = 0; i < num; i++) {
+    int number = va_arg (myList, int);
+    array[i] = number;
+    countModes[array[i]]++;
+  }
+
+  //End variable argument list
+  va_end (myList);
+
+  //Loops through countModes array and finds the max value and index
+  for (int i = 0; i < 11; i++) {
+    //Checks if current array value is greater than the set max
+    if (countModes[i] > maxModes) {
+      maxModes = countModes[i];
+      maxIndex = i;
+    }
+  }
+
+  //Loops through countModes and outputs first instance of maxModes;
+  for (int i = 0; i < 11; i++) {
+    if(countModes[i] == maxModes) {
+      minIndex = i;
+      break;
+    }
+  }
+  return minIndex;
+}
+
+
+int compare (const void * a, const void * b) {
+  return ( *(int*)a - *(int*)b );
 }
 
 int main() {
@@ -98,6 +131,9 @@ int main() {
   /* TODO: you should add at least two more test cases for your
      median() function here. */
 
+  assert(median(9, 32, 76, 21, 83, 81, 80, 100, 91, 95) == 81);
+  assert(median(10, 32, 76, 21, 83, 81, 80, 100, 91, 95, 15) == 80.5);
+
   /* MODE */
 
   /* straightforward cases */
@@ -111,6 +147,9 @@ int main() {
 
   /* TODO: you should add at least two more test cases for your mode()
      function here. */
+  
+  assert(mode(10, 2, 1, 3, 3, 1, 5, 4, 6, 7, 3) == 3);
+  assert(mode(11, 2, 1, 3, 3, 1, 5, 4, 6, 7, 3, 1) == 1);
 
   return 0;
 }
